@@ -11,6 +11,11 @@ class Data {
 
   /* Data(this.dia, this.mes, this.ano); */
   Data([this.dia = 1, this.mes = 1, this.ano = 1970]);
+  Data.com({this.dia = 1, this.mes = 1, this.ano = 1070});
+  Data.ultimoDiaDoAno(this.ano) {
+    dia = 31;
+    mes = 12;
+  }
 
   String obterFormatada() {
     return '$dia/$mes/$ano';
@@ -40,4 +45,11 @@ void main(List<String> args) {
   print(new Data(31));
   print(new Data(31, 12));
   print(new Data(31, 12, 2023));
+
+  print(Data.com(ano: 2022));
+
+  var dataFinal = Data.com(dia: 12, mes: 7, ano: 2024);
+  print("O Mickey será público em $dataFinal");
+
+  print(Data.ultimoDiaDoAno(2023));
 }

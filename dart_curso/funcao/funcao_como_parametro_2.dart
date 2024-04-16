@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'funcao_como_parametro_1.dart';
 
 void exevutarPor(int qtd, Function(String) fn, String valor){
