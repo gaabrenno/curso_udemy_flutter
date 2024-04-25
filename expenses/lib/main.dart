@@ -48,26 +48,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Transaction> _transactions = [
-    Transaction(
-      id: 't0',
-      title: 'Conta Antiga',
-      value: 400.00,
-      date: DateTime.now().subtract(Duration(days: 33)),
-    ),
-    Transaction(
-      id: 't1',
-      title: 'Novo Tênis de Corrida',
-      value: 310.76,
-      date: DateTime.now().subtract(Duration(days: 3)),
-    ),
-    Transaction(
-      id: 't2',
-      title: 'Conta de Luz',
-      value: 211.30,
-      date: DateTime.now().subtract(Duration(days: 4)),
-    ),
-  ];
+  final List<Transaction> _transactions = [];
+  bool _showChart = false;
 
   List<Transaction> get _recentTransactions {
     return _transactions.where((tr) {
@@ -77,12 +59,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
 
-  _addTransaction(String title, double value) {
+  _addTransaction(String title, double value, DateTime date) {
     final newTransaction = Transaction(
       id: Random().nextDouble().toString(),
       title: title,
       value: value,
-      date: DateTime.now(),
+      date: date,
     );
 
     setState(() {
@@ -90,6 +72,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     Navigator.of(context).pop();
+  }
+
+  _removeTrasaction(String id) {
+    setState(() {
+      _transactions.removeWhere((tr) {
+        return tr.id == id;
+      });
+    });
   }
 
   _openTransactionFormModal(BuildContext context) {
@@ -103,24 +93,48 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text('Despesas Pessoais')),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        actions: <Widget>[
+    bool isLandsCape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final appBar = AppBar(
+      title: Center(child: Text('Despesas Pessoais')),
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      actions: <Widget>[
+        if (isLandsCape)
           IconButton(
             color: Theme.of(context).colorScheme.tertiary,
-            icon: Icon(Icons.add),
-            onPressed: () => _openTransactionFormModal(context),
+            icon: Icon(_showChart ? Icons.list : Icons.bar_chart),
+            onPressed: () {
+              setState(() {
+                _showChart = !_showChart;
+              });
+            },
           ),
-        ],
-      ),
+        IconButton(
+          color: Theme.of(context).colorScheme.tertiary,
+          icon: Icon(Icons.add),
+          onPressed: () => _openTransactionFormModal(context),
+        ),
+      ],
+    );
+    final availableHeight = MediaQuery.of(context).size.height -
+        appBar.preferredSize.height -
+        MediaQuery.of(context).padding.top;
+
+    return Scaffold(
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Chart(_recentTransactions),
-            TransactionList(_transactions),
+              if (_showChart || !isLandsCape)
+                Container(
+                    height: availableHeight * (isLandsCape ? 0.7 : 0.3),
+                    child: Chart(_recentTransactions)),
+            if (!_showChart || !isLandsCape)
+              Container(
+                  height: availableHeight * 0.7,
+                  child: TransactionList(_transactions, _removeTrasaction)),
           ],
         ),
       ),

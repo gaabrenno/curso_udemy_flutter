@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:brasil_fields/brasil_fields.dart';
 
 class TransactionForm extends StatefulWidget {
-  final void Function(String, double) onSubmit;
+  final void Function(String, double, DateTime) onSubmit;
 
   const TransactionForm(this.onSubmit, {super.key});
 
@@ -19,12 +21,13 @@ class _TransactionFormState extends State<TransactionForm> {
 
   _submitForm() {
     final title = _titleController.text;
-    final value = double.tryParse(_valueController.text) ?? 0.0;
+    final valueNoPoint =_valueController.text.replaceAll('.', '');
+    final value = double.tryParse(valueNoPoint.replaceAll(',','.')) ?? 0.0;
 
-    if (title.isEmpty || value <= 0) {
+    if (title.isEmpty || value <= 0 || _selectedDate == null) {
       return;
     }
-    widget.onSubmit(title, value);
+    widget.onSubmit(title, value, _selectedDate);
   }
 
   _showDatePiker() {
@@ -64,6 +67,10 @@ class _TransactionFormState extends State<TransactionForm> {
               keyboardType: TextInputType.numberWithOptions(decimal: true),
               onSubmitted: (_) => _submitForm(),
               decoration: const InputDecoration(labelText: 'Valor (R\$)'),
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                CentavosInputFormatter()
+              ],
             ),
             Container(
               height: 70,
